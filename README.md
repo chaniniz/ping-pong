@@ -3,7 +3,10 @@
 This repository contains a simple web-based Galaga style game implemented purely with HTML, CSS and JavaScript. No server-side code is required.
 
 Features:
-- Keyboard controls (arrow keys and space bar).
+- Keyboard controls (arrow keys for movement in four directions and space bar to fire).
+- Enemies move with varied patterns and may drop power-ups.
+- Shooting causes an overheat gauge to fill; overheating disables firing temporarily.
+- Star field background and simple shield/rapid-fire items.
 - Ten stages, each lasting at least three minutes.
 - Optional login to save your progress.
 
