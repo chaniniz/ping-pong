@@ -1,12 +1,21 @@
 # Ping-Pong
 
-This repository contains a simple web-based Galaga style game implemented purely with HTML, CSS and JavaScript. No server-side code is required.
+This repository contains a Galaga style game implemented purely with HTML, CSS and JavaScript.
 
-Features:
-- Keyboard controls (arrow keys and space bar).
-- Ten stages, each lasting at least three minutes.
-- Optional login to save your progress.
+## Features
+- Keyboard controls (arrow keys for movement and space bar to fire)
+- Enemies with varied patterns, including occasional boss fights
+- Collectible power-ups for shields, rapid fire and spread shots
+- Shooting causes an overheat gauge to fill; overheating disables firing
+- Animated star field background and simple explosion effects
+- Stage system with increasing difficulty, score tracking and lives
+- Ten data driven stages each with unique background, enemy behaviour and optional bosses
+- Optional login to save your progress between sessions
 
 ## Running
+Open `login.html` in a browser or serve the folder with any static file server.
+Logging in stores your current stage using local storage. Playing as a guest does not save progress.
 
-Open `login.html` in your browser or serve the folder with any static file server. When you log in, your stage is saved in your browser's local storage. Playing as a guest does not save progress.
+Stages are defined in `static/game.js` inside the `stageData` array. Each object
+specifies the background, enemy types, power-ups and optional boss for that
+stage. The `loadStage` function applies these settings when advancing.
