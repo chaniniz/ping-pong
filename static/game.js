@@ -22,6 +22,7 @@ if (username) {
     stage = parseInt(localStorage.getItem('stage_' + username) || '1', 10);
 }
 stageDisplay.textContent = stage;
+
 let kills = 0;
 let killsNeeded = stage * 5;
 let ship = { x: canvas.width / 2 - 15, y: canvas.height - 40, width: 30, height: 30 };
