@@ -10,13 +10,13 @@
 </head>
 <body>
     <div id="info">
-        <p>Stage: <span id="stage">{{ stage }}</span></p>
-        <p>Kills: <span id="kills">0</span> / <span id="killsNeeded">{{ stage * 5 }}</span></p>
-        {% if logged_in %}
+        <p>Stage: <span id="stage"><%= stage %></span></p>
+        <p>Kills: <span id="kills">0</span> / <span id="killsNeeded"><%= stage * 5 %></span></p>
+        <% if (logged_in) { %>
         <p><a href="/logout">Logout</a></p>
-        {% else %}
+        <% } else { %>
         <p><a href="/login">Login</a></p>
-        {% endif %}
+        <% } %>
     </div>
     <canvas id="game" width="400" height="600"></canvas>
     <script src="/static/game.js"></script>

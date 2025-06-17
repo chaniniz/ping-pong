@@ -6,8 +6,8 @@
 </head>
 <body>
     <h1>Galaga Login</h1>
-    {% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
-    <form method="post">
+    <% if (error) { %><p style="color:red;"><%= error %></p><% } %>
+    <form method="post" action="/login">
         <input type="text" name="username" placeholder="Username">
         <button type="submit">Login</button>
     </form>

@@ -1,6 +1,6 @@
 # Ping-Pong
 
-This repository contains a simple web-based Galaga style game.
+This repository contains a simple web-based Galaga style game written entirely in JavaScript using Node.js and Express.
 
 Features:
 - Keyboard controls (arrow keys and space bar).
@@ -9,11 +9,11 @@ Features:
 
 ## Running
 
-Install Flask and run the application:
+Install dependencies and start the application:
 
 ```bash
-pip install Flask
-python app.py
+npm install
+npm start
 ```
 
 Then open `http://localhost:5000` in your browser.
