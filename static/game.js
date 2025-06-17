@@ -13,6 +13,16 @@ const gameOverEl = document.getElementById('gameOver');
 const finalScoreEl = document.getElementById('finalScore');
 const muteBtn = document.getElementById('mute');
 
+// Image configuration. Add your own files under static/images/ to replace the defaults
+const playerImg = new Image();
+playerImg.src = 'static/images/player.png';
+const enemyImagePaths = [
+    'static/images/enemy1.png',
+    'static/images/enemy2.png',
+    'static/images/enemy3.png'
+];
+const enemyImgs = enemyImagePaths.map(p => { const i = new Image(); i.src = p; return i; });
+
 const username = localStorage.getItem('username');
 if (username) {
     loginLinks.innerHTML = '<a href="#" id="logout">Logout</a>';
@@ -218,7 +228,9 @@ let bulletUpgradeTime = 0;
 let shield = 0;
 
 let overheat = 0;
-const MAX_OVERHEAT = 100;
+// Overheat settings tuned so players can fire much longer before overheating
+// These constants can be tweaked to change difficulty
+const MAX_OVERHEAT = 300;
 const OVERHEAT_DECAY = 0.3;
 let canShoot = true;
 
@@ -272,7 +284,8 @@ function spawnEnemy(){
     const pattern = cfg.enemyPatterns[Math.floor(Math.random()*cfg.enemyPatterns.length)] || 'straight';
     const def = enemyTypeDefs[typeName] || enemyTypeDefs.basic;
     const x = Math.random() * (canvas.width - def.width);
-    const en = {type:def, x, y:-def.height, width:def.width, height:def.height, pattern, health:def.health, phase:Math.random()*Math.PI*2, speedY:def.speed + stage*0.2, speedX: (Math.random()-0.5)*2, dir: 1};
+    const img = enemyImgs[Math.floor(Math.random()*enemyImgs.length)];
+    const en = {type:def, x, y:-def.height, width:def.width, height:def.height, pattern, health:def.health, phase:Math.random()*Math.PI*2, speedY:def.speed + stage*0.2, speedX: (Math.random()-0.5)*2, dir: 1, img};
     enemies.push(en);
 }
 
@@ -302,12 +315,13 @@ function addExplosion(x,y){
 }
 
 function fireBullet(){
+    const base = {x: ship.x + ship.width/2 - 2, y: ship.y, width:4, height:10};
     if(bulletMode === 'spread'){
-        bullets.push({x: ship.x + ship.width/2 - 2, y: ship.y, dx: 0});
-        bullets.push({x: ship.x + ship.width/2 - 2, y: ship.y, dx: -1});
-        bullets.push({x: ship.x + ship.width/2 - 2, y: ship.y, dx: 1});
+        bullets.push({...base, dx: 0});
+        bullets.push({...base, dx: -1});
+        bullets.push({...base, dx: 1});
     } else {
-        bullets.push({x: ship.x + ship.width/2 - 2, y: ship.y, dx: 0});
+        bullets.push({...base, dx: 0});
     }
     playTone(400, 0.05);
 }
@@ -332,7 +346,8 @@ function update(){
     overheat = Math.max(0, overheat - OVERHEAT_DECAY);
     if (keys[' '] && canShoot && overheat < MAX_OVERHEAT) {
         fireBullet();
-        overheat += bulletMode === 'rapid' ? 5 : 10;
+        // Firing now adds far less heat so the gauge doesn't max out so fast
+        overheat += bulletMode === 'rapid' ? 1 : 2;
         if (overheat >= MAX_OVERHEAT) canShoot = false;
     }
     if (!canShoot && overheat <= MAX_OVERHEAT/2) canShoot = true;
@@ -492,15 +507,23 @@ function draw(){
         stars.forEach(s => ctx.fillRect(s.x, s.y, 2, 2));
     }
 
-    ctx.fillStyle = shield > 0 ? 'cyan' : 'white';
-    ctx.fillRect(ship.x, ship.y, ship.width, ship.height);
+    if(playerImg.complete && playerImg.naturalWidth){
+        ctx.drawImage(playerImg, ship.x, ship.y, ship.width, ship.height);
+    } else {
+        ctx.fillStyle = shield > 0 ? 'cyan' : 'white';
+        ctx.fillRect(ship.x, ship.y, ship.width, ship.height);
+    }
 
     ctx.fillStyle = bulletColor;
-    bullets.forEach(b => ctx.fillRect(b.x, b.y, 4, 10));
+    bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
 
     enemies.forEach(en => {
-        ctx.fillStyle = en.type.color;
-        ctx.fillRect(en.x, en.y, en.width, en.height);
+        if(en.img && en.img.complete && en.img.naturalWidth){
+            ctx.drawImage(en.img, en.x, en.y, en.width, en.height);
+        } else {
+            ctx.fillStyle = en.type.color;
+            ctx.fillRect(en.x, en.y, en.width, en.height);
+        }
     });
 
     ctx.fillStyle = 'gray';
