@@ -6,7 +6,9 @@ This repository contains a Galaga style game implemented purely with HTML, CSS a
 - Keyboard controls (arrow keys for movement and space bar to fire)
 - Enemies with varied patterns, including occasional boss fights
 - Collectible power-ups for shields, rapid fire and spread shots
-- Shooting causes an overheat gauge to fill; overheating disables firing
+- Weapons use a 30 round magazine with a short reload when empty
+- Enemies fire back and damage the player
+- Each stage has a timer and some boss stages change the arena shape
 - Animated star field background and simple explosion effects
 - Stage system with increasing difficulty, score tracking and lives
 - Ten data driven stages each with unique background, enemy behaviour and optional bosses
