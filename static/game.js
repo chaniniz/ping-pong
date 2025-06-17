@@ -7,6 +7,8 @@ const killsNeededDisplay = document.getElementById('killsNeeded');
 const shieldStatus = document.getElementById('shieldStatus');
 const livesDisplay = document.getElementById('lives');
 const scoreDisplay = document.getElementById('score');
+const ammoDisplay = document.getElementById('ammo');
+const timeLeftDisplay = document.getElementById('timeLeft');
 const loginLinks = document.getElementById('loginLinks');
 const messageEl = document.getElementById('message');
 const gameOverEl = document.getElementById('gameOver');
@@ -64,7 +66,8 @@ const stageData = [
     music: 'light_theme.mp3',
     hazards: [],
     introText: 'Welcome to the battlefield!',
-    boss: null
+    boss: null,
+    shape: 'rect'
   },
   {
     stage: 2,
@@ -76,7 +79,8 @@ const stageData = [
     music: 'stage2_theme.mp3',
     hazards: [],
     introText: 'Enemies are getting faster!',
-    boss: null
+    boss: null,
+    shape: 'rect'
   },
   {
     stage: 3,
@@ -88,7 +92,8 @@ const stageData = [
     music: 'stage3_theme.mp3',
     hazards: ['meteor'],
     introText: 'Watch out for asteroids!',
-    boss: null
+    boss: null,
+    shape: 'rect'
   },
   {
     stage: 4,
@@ -100,7 +105,8 @@ const stageData = [
     music: 'stage4_theme.mp3',
     hazards: [],
     introText: 'They are everywhere!',
-    boss: null
+    boss: null,
+    shape: 'rect'
   },
   {
     stage: 5,
@@ -119,7 +125,8 @@ const stageData = [
         { pattern: 'laser_spread', duration: 10 },
         { pattern: 'wave_shot', duration: 15 }
       ]
-    }
+    },
+    shape: 'circle'
   },
   {
     stage: 6,
@@ -131,7 +138,8 @@ const stageData = [
     music: 'stage6_theme.mp3',
     hazards: [],
     introText: 'Press on into the void.',
-    boss: null
+    boss: null,
+    shape: 'rect'
   },
   {
     stage: 7,
@@ -143,7 +151,8 @@ const stageData = [
     music: 'stage7_theme.mp3',
     hazards: ['meteor'],
     introText: 'Visibility is low...',
-    boss: null
+    boss: null,
+    shape: 'rect'
   },
   {
     stage: 8,
@@ -155,7 +164,8 @@ const stageData = [
     music: 'stage8_theme.mp3',
     hazards: [],
     introText: 'The battle rages on!',
-    boss: null
+    boss: null,
+    shape: 'rect'
   },
   {
     stage: 9,
@@ -167,7 +177,8 @@ const stageData = [
     music: 'stage9_theme.mp3',
     hazards: ['meteor'],
     introText: 'Almost there...',
-    boss: null
+    boss: null,
+    shape: 'rect'
   },
   {
     stage: 10,
@@ -187,7 +198,8 @@ const stageData = [
         { pattern: 'wave_shot', duration: 15 },
         { pattern: 'charge', duration: 20 }
       ]
-    }
+    },
+    shape: 'triangle'
   }
 ];
 
@@ -205,6 +217,7 @@ let score = 0;
 
 let ship = { x: canvas.width / 2 - 15, y: canvas.height - 40, width: 30, height: 30 };
 let bullets = [];
+let enemyBullets = [];
 let enemies = [];
 let powerUps = [];
 let explosions = [];
@@ -218,6 +231,7 @@ let allowedPowerUps = [];
 let backgroundType = 'stars';
 let backgroundColor = 'black';
 let starBaseSpeed = 1;
+let stageShape = 'rect';
 let hazards = [];
 let lastHazardTime = 0;
 
@@ -227,12 +241,10 @@ let bulletMode = 'single';
 let bulletUpgradeTime = 0;
 let shield = 0;
 
-let overheat = 0;
-// Overheat settings tuned so players can fire much longer before overheating
-// These constants can be tweaked to change difficulty
-const MAX_OVERHEAT = 300;
-const OVERHEAT_DECAY = 0.3;
-let canShoot = true;
+const MAGAZINE_SIZE = 30;
+let ammo = MAGAZINE_SIZE;
+let reloadTime = 0; // frames remaining until gun is reloaded
+const RELOAD_DURATION = 60; // 1 second assuming 60fps
 
 let boss = null;
 let messageTime = 0;
@@ -320,10 +332,13 @@ function fireBullet(){
         bullets.push({...base, dx: 0});
         bullets.push({...base, dx: -1});
         bullets.push({...base, dx: 1});
+        playTone(400, 0.05);
+        return 3;
     } else {
         bullets.push({...base, dx: 0});
+        playTone(400, 0.05);
+        return 1;
     }
-    playTone(400, 0.05);
 }
 
 function hitPlayer(){
@@ -343,14 +358,17 @@ function update(){
     ship.x = Math.max(0, Math.min(canvas.width - ship.width, ship.x));
     ship.y = Math.max(0, Math.min(canvas.height - ship.height, ship.y));
 
-    overheat = Math.max(0, overheat - OVERHEAT_DECAY);
-    if (keys[' '] && canShoot && overheat < MAX_OVERHEAT) {
-        fireBullet();
-        // Firing now adds far less heat so the gauge doesn't max out so fast
-        overheat += bulletMode === 'rapid' ? 1 : 2;
-        if (overheat >= MAX_OVERHEAT) canShoot = false;
+    if(reloadTime > 0){
+        reloadTime--;
+        if(reloadTime === 0) ammo = MAGAZINE_SIZE;
     }
-    if (!canShoot && overheat <= MAX_OVERHEAT/2) canShoot = true;
+    if (keys[' '] && reloadTime === 0 && ammo > 0) {
+        const used = fireBullet();
+        ammo -= used;
+        if(ammo <= 0){
+            reloadTime = RELOAD_DURATION;
+        }
+    }
 
     bullets.forEach(b => {
         b.y -= bulletSpeed;
@@ -378,6 +396,9 @@ function update(){
         } else {
             en.x += en.speedX;
         }
+        if(Math.random() < 0.01){
+            enemyBullets.push({x: en.x + en.width/2 - 2, y: en.y + en.height, width:4, height:10, dy:2});
+        }
     });
     enemies = enemies.filter(en => en.y < canvas.height + 30 && en.health > 0);
 
@@ -387,6 +408,9 @@ function update(){
             if(boss.y >= 50) boss.entered = true;
         } else {
             boss.x += Math.sin(Date.now()/500) * 2;
+            if(Math.random() < 0.02){
+                enemyBullets.push({x: boss.x + boss.width/2 - 2, y: boss.y + boss.height, width:4, height:10, dy:3});
+            }
         }
     }
 
@@ -395,6 +419,11 @@ function update(){
 
     hazards.forEach(h => h.y += h.speedY);
     hazards = hazards.filter(h => h.y < canvas.height + 20);
+
+    enemyBullets.forEach(b => {
+        b.y += b.dy;
+    });
+    enemyBullets = enemyBullets.filter(b => b.y < canvas.height + 10);
 
     stars.forEach(s => {
         s.y += s.speed;
@@ -435,6 +464,16 @@ function update(){
     enemies.forEach(en => {
         if(collide(ship,en)){
             en.health = 0;
+            if(shield > 0){
+                shield = 0;
+            } else {
+                hitPlayer();
+            }
+        }
+    });
+    enemyBullets.forEach(b => {
+        if(collide(ship,b)){
+            b.y = canvas.height + 20;
             if(shield > 0){
                 shield = 0;
             } else {
@@ -485,6 +524,9 @@ function update(){
     shieldStatus.textContent = shield > 0 ? 'ON' : 'OFF';
     livesDisplay.textContent = lives;
     scoreDisplay.textContent = score;
+    ammoDisplay.textContent = ammo;
+    const timeLeft = Math.max(0, Math.ceil((MIN_STAGE_TIME - (Date.now()-stageStart))/1000));
+    timeLeftDisplay.textContent = timeLeft;
     killsDisplay.textContent = kills;
     killsNeededDisplay.textContent = killsNeeded;
 
@@ -507,6 +549,20 @@ function draw(){
         stars.forEach(s => ctx.fillRect(s.x, s.y, 2, 2));
     }
 
+    ctx.strokeStyle = '#555';
+    if(stageShape === 'circle'){
+        ctx.beginPath();
+        ctx.arc(canvas.width/2, canvas.height/2, Math.min(canvas.width, canvas.height)/2 - 10, 0, Math.PI*2);
+        ctx.stroke();
+    } else if(stageShape === 'triangle'){
+        ctx.beginPath();
+        ctx.moveTo(canvas.width/2, 10);
+        ctx.lineTo(10, canvas.height-10);
+        ctx.lineTo(canvas.width-10, canvas.height-10);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
     if(playerImg.complete && playerImg.naturalWidth){
         ctx.drawImage(playerImg, ship.x, ship.y, ship.width, ship.height);
     } else {
@@ -516,6 +572,8 @@ function draw(){
 
     ctx.fillStyle = bulletColor;
     bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
+    ctx.fillStyle = 'red';
+    enemyBullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
 
     enemies.forEach(en => {
         if(en.img && en.img.complete && en.img.naturalWidth){
@@ -552,8 +610,8 @@ function draw(){
 
     ctx.strokeStyle = 'white';
     ctx.strokeRect(10, canvas.height - 15, 100, 5);
-    ctx.fillStyle = 'orange';
-    ctx.fillRect(10, canvas.height - 15, overheat, 5);
+    ctx.fillStyle = reloadTime > 0 ? 'gray' : 'orange';
+    ctx.fillRect(10, canvas.height - 15, 100 * (ammo / MAGAZINE_SIZE), 5);
 }
 
 let anim;
@@ -576,11 +634,17 @@ function loadStage(num){
     killsNeededDisplay.textContent = killsNeeded;
     livesDisplay.textContent = lives;
     scoreDisplay.textContent = score;
+    ammoDisplay.textContent = ammo;
+    timeLeftDisplay.textContent = Math.ceil(MIN_STAGE_TIME/1000);
     bullets = [];
+    enemyBullets = [];
     enemies = [];
     powerUps = [];
     hazards = [];
     boss = null;
+    ammo = MAGAZINE_SIZE;
+    reloadTime = 0;
+    stageShape = cfg.shape || 'rect';
     allowedPowerUps = cfg.powerUps.slice();
     setBackground(cfg.background);
     setMusic(cfg.music);
@@ -608,15 +672,19 @@ function restartGame(){
     lives = 3;
     score = 0;
     bullets = [];
+    enemyBullets = [];
     enemies = [];
     powerUps = [];
     explosions = [];
     boss = null;
     shield = 0;
-    overheat = 0;
+    ammo = MAGAZINE_SIZE;
+    reloadTime = 0;
     loadStage(1);
     livesDisplay.textContent = lives;
     scoreDisplay.textContent = score;
+    ammoDisplay.textContent = ammo;
+    timeLeftDisplay.textContent = Math.ceil(MIN_STAGE_TIME/1000);
     anim = requestAnimationFrame(gameLoop);
 }
 
