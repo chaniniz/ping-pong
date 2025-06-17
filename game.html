@@ -4,13 +4,20 @@
     <meta charset="UTF-8">
     <title>Galaga Clone</title>
     <style>
-        canvas { background: black; display: block; margin: 0 auto; }
-        #info { text-align: center; }
+        canvas { background: black; display: none; margin: 0 auto; }
+        #info { text-align: center; display:none; }
         #message, #gameOver { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; display: none; text-align: center; }
-        #mute { position: absolute; top: 5px; right: 5px; }
+        #mute { position: absolute; top: 5px; right: 5px; display:none; }
+        #charSelect { text-align:center; }
     </style>
 </head>
 <body>
+    <div id="charSelect">
+        <h1>Select Character</h1>
+        <button data-char="usagi">Usagi</button>
+        <button data-char="hachiware">Hachiware</button>
+        <button data-char="chiikawa">Chiikawa</button>
+    </div>
     <div id="info">
         <p>Stage: <span id="stage"></span></p>
         <p>Kills: <span id="kills">0</span> / <span id="killsNeeded"></span></p>
@@ -28,5 +35,16 @@
     </div>
     <canvas id="game" width="400" height="600"></canvas>
     <script src="static/game.js"></script>
+    <script>
+    document.querySelectorAll('#charSelect button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('charSelect').style.display = 'none';
+            document.getElementById('info').style.display = 'block';
+            document.getElementById('mute').style.display = 'block';
+            document.getElementById('game').style.display = 'block';
+            startGame(btn.dataset.char);
+        });
+    });
+    </script>
 </body>
 </html>

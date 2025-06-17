@@ -49,6 +49,27 @@ function playTone(freq, dur){
     osc.stop(audioCtx.currentTime + dur);
 }
 
+// ------- Character configuration -------
+const CHARACTERS = {
+    usagi: { bulletMode: 'rapid', bulletSpeed: 8, damage: 1, fireRate: 5 },
+    hachiware: { bulletMode: 'single', bulletSpeed: 6, damage: 2, fireRate: 15 },
+    chiikawa: { bulletMode: 'spread', bulletSpeed: 5, damage: 1, fireRate: 10 }
+};
+
+let selectedCharacter = 'usagi';
+
+let playerDamage = 1;
+let fireRate = 10;
+let fireCooldown = 0;
+
+function applyCharacter(name){
+    const cfg = CHARACTERS[name] || CHARACTERS.usagi;
+    bulletMode = cfg.bulletMode;
+    bulletSpeed = cfg.bulletSpeed;
+    playerDamage = cfg.damage;
+    fireRate = cfg.fireRate;
+}
+
 muteBtn.addEventListener('click', ()=>{
     muted = !muted;
     muteBtn.textContent = muted ? 'Unmute' : 'Mute';
@@ -362,9 +383,11 @@ function update(){
         reloadTime--;
         if(reloadTime === 0) ammo = MAGAZINE_SIZE;
     }
-    if (keys[' '] && reloadTime === 0 && ammo > 0) {
+    if(fireCooldown > 0) fireCooldown--;
+    if (keys[' '] && reloadTime === 0 && ammo > 0 && fireCooldown === 0) {
         const used = fireBullet();
         ammo -= used;
+        fireCooldown = fireRate;
         if(ammo <= 0){
             reloadTime = RELOAD_DURATION;
         }
@@ -438,7 +461,7 @@ function update(){
     bullets.forEach(b => {
         enemies.forEach(en => {
             if(collide(b,en)){
-                en.health--;
+                en.health -= playerDamage;
                 b.remove = true;
                 if(en.health <= 0){
                     addExplosion(en.x+en.width/2, en.y+en.height/2);
@@ -449,7 +472,7 @@ function update(){
             }
         });
         if(boss && collide(b,boss)){
-            boss.health--;
+            boss.health -= playerDamage;
             b.remove = true;
             if(boss.health <= 0){
                 addExplosion(boss.x+boss.width/2, boss.y+boss.height/2);
@@ -681,6 +704,7 @@ function restartGame(){
     ammo = MAGAZINE_SIZE;
     reloadTime = 0;
     loadStage(1);
+    applyCharacter(selectedCharacter);
     livesDisplay.textContent = lives;
     scoreDisplay.textContent = score;
     ammoDisplay.textContent = ammo;
@@ -688,5 +712,9 @@ function restartGame(){
     anim = requestAnimationFrame(gameLoop);
 }
 
-loadStage(stage);
-anim = requestAnimationFrame(gameLoop);
+function startGame(char){
+    selectedCharacter = char || 'usagi';
+    applyCharacter(selectedCharacter);
+    loadStage(stage);
+    anim = requestAnimationFrame(gameLoop);
+}
