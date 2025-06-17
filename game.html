@@ -6,14 +6,24 @@
     <style>
         canvas { background: black; display: block; margin: 0 auto; }
         #info { text-align: center; }
+        #message, #gameOver { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; display: none; text-align: center; }
+        #mute { position: absolute; top: 5px; right: 5px; }
     </style>
 </head>
 <body>
     <div id="info">
         <p>Stage: <span id="stage"></span></p>
         <p>Kills: <span id="kills">0</span> / <span id="killsNeeded"></span></p>
+        <p>Lives: <span id="lives">3</span> | Score: <span id="score">0</span></p>
         <p>Shield: <span id="shieldStatus">OFF</span></p>
         <p id="loginLinks"></p>
+    </div>
+    <button id="mute">Mute</button>
+    <div id="message"></div>
+    <div id="gameOver">
+        <p>Game Over</p>
+        <p>Score: <span id="finalScore"></span></p>
+        <button id="restart">Restart</button>
     </div>
     <canvas id="game" width="400" height="600"></canvas>
     <script src="static/game.js"></script>
