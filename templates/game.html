@@ -12,6 +12,7 @@
     <div id="info">
         <p>Stage: <span id="stage">{{ stage }}</span></p>
         <p>Kills: <span id="kills">0</span> / <span id="killsNeeded">{{ stage * 5 }}</span></p>
+        <p>Shield: <span id="shieldStatus">OFF</span></p>
         {% if logged_in %}
         <p><a href="/logout">Logout</a></p>
         {% else %}
