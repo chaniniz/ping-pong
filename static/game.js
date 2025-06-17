@@ -3,8 +3,26 @@ const ctx = canvas.getContext('2d');
 const stageDisplay = document.getElementById('stage');
 const killsDisplay = document.getElementById('kills');
 const killsNeededDisplay = document.getElementById('killsNeeded');
+const loginLinks = document.getElementById('loginLinks');
 
-let stage = parseInt(stageDisplay.textContent);
+const username = localStorage.getItem('username');
+if (username) {
+    loginLinks.innerHTML = '<a href="#" id="logout">Logout</a>';
+    document.getElementById('logout').addEventListener('click', function(e){
+        e.preventDefault();
+        localStorage.removeItem('username');
+        window.location.href = 'login.html';
+    });
+} else {
+    loginLinks.innerHTML = '<a href="login.html">Login</a>';
+}
+
+let stage = 1;
+if (username) {
+    stage = parseInt(localStorage.getItem('stage_' + username) || '1', 10);
+}
+stageDisplay.textContent = stage;
+
 let kills = 0;
 let killsNeeded = stage * 5;
 let ship = { x: canvas.width / 2 - 15, y: canvas.height - 40, width: 30, height: 30 };
@@ -98,16 +116,11 @@ function nextStage() {
     killsNeededDisplay.textContent = killsNeeded;
     bullets = [];
     enemies = [];
-    if (document.body.dataset.loggedIn === 'true') {
-        fetch('/save_stage', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ stage })
-        });
+    if (username) {
+        localStorage.setItem('stage_' + username, stage);
     }
 }
 
-document.body.dataset.loggedIn = document.querySelector('a[href="/logout"]') ? 'true' : 'false';
 killsDisplay.textContent = kills;
 killsNeededDisplay.textContent = killsNeeded;
 loop();

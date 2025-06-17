@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+    <h1>Galaga Login</h1>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Username">
+        <button type="submit">Login</button>
+    </form>
+    <p>Or <a href="game.html">play as guest</a></p>
+    <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e){
+        e.preventDefault();
+        var name = document.getElementById('username').value.trim();
+        if(name){
+            localStorage.setItem('username', name);
+            var stage = localStorage.getItem('stage_' + name) || 1;
+            localStorage.setItem('stage_' + name, stage);
+            window.location.href = 'game.html';
+        }
+    });
+    </script>
+</body>
+</html>

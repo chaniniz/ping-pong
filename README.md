@@ -1,6 +1,6 @@
 # Ping-Pong
 
-This repository contains a simple web-based Galaga style game.
+This repository contains a simple web-based Galaga style game implemented purely with HTML, CSS and JavaScript. No server-side code is required.
 
 Features:
 - Keyboard controls (arrow keys and space bar).
@@ -9,11 +9,4 @@ Features:
 
 ## Running
 
-Install Flask and run the application:
-
-```bash
-pip install Flask
-python app.py
-```
-
-Then open `http://localhost:5000` in your browser.
+Open `login.html` in your browser or serve the folder with any static file server. When you log in, your stage is saved in your browser's local storage. Playing as a guest does not save progress.
